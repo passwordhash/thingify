@@ -46,12 +46,14 @@ func (c *GHClient) Issues() ([]model.Issue, error) {
 		log.Error("error performing request", "err", err)
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
+	defer resp.Body.Close()
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		log.Error("error reading response", "err", err)
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
+	defer resp.Body.Close()
 
 	var issues []model.Issue
 	var json = jsoniter.ConfigCompatibleWithStandardLibrary
@@ -60,10 +62,12 @@ func (c *GHClient) Issues() ([]model.Issue, error) {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
 
+	//marshalToFile("out.json", issues[0])
+
 	return issues, nil
 }
 
-func marshalToFile(filename string, v *interface{}) error {
+func marshalToFile(filename string, v interface{}) error {
 	f, err := os.Create(filename)
 	if err != nil {
 		return err
