@@ -7,7 +7,7 @@ type Config struct {
 }
 
 type GHConfig struct {
-	BaseURL string `yaml:"api_url" env:"GH_API_BASE_URL" default:"https://api.github.com"`
+	BaseURL string `yaml:"api_url" env:"GH_API_BASE_URL" env-default:"https://api.github.com"`
 	Token   string `env:"GH_TOKEN" env-required:"true"`
 }
 

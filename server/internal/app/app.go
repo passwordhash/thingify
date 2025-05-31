@@ -12,7 +12,7 @@ type App struct {
 
 func New(log *slog.Logger, cfg *config.Config) *App {
 	port := 8080 // TMP
-	srvApp := server.New(log, port, cfg.GH.Token, cfg.GH.BaseURL)
+	srvApp := server.New(log, port, cfg.GH.BaseURL, cfg.GH.Token)
 
 	return &App{
 		Server: srvApp,

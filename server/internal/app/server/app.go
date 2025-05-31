@@ -17,7 +17,7 @@ func New(
 	ghBaseURL string,
 	ghToken string,
 ) *App {
-	ghClient := github.Register(ghBaseURL, ghToken)
+	ghClient := github.Register(logger, ghBaseURL, ghToken)
 
 	return &App{
 		log:      logger,
