@@ -26,14 +26,14 @@ func New(
 }
 
 // MustRun запускает сервер и вызывает панику в случае ошибки.
-func (a *App) MustRun() {
-	if err := a.Run(); err != nil {
+func (a *App) MustRun(ctx context.Context) {
+	if err := a.Run(ctx); err != nil {
 		panic("failed to run server")
 	}
 }
 
 // Run запускает сервер
-func (a *App) Run() error {
+func (a *App) Run(ctx context.Context) error {
 	const op = "server.Run"
 
 	log := a.log.With("op", op)
@@ -41,7 +41,7 @@ func (a *App) Run() error {
 	log.Info("starting server")
 
 	a.monitorService.ShortPollingNewIssues(
-		context.TODO(), os.Getenv("GH_TOKEN"), 15*time.Second)
+		ctx, os.Getenv("GH_TOKEN"), 15*time.Second)
 
 	return nil
 }

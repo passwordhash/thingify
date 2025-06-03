@@ -7,6 +7,8 @@ import (
 	"thingify/internal/config"
 	"time"
 
+	"context"
+
 	"github.com/lmittmann/tint"
 )
 
@@ -17,15 +19,22 @@ func main() {
 		}
 	}()
 
+	ctx := context.Background()
+
+	cfg := config.MustLoad()
+
 	w := os.Stdout
 	log := slog.New(tint.NewHandler(w, &tint.Options{
 		Level:      slog.LevelInfo,
 		TimeFormat: time.TimeOnly,
 	}))
 
-	cfg := config.MustLoad()
+	log.Info("starting Thingify application server...")
+	log.Debug("with config", "config", cfg)
 
-	application := app.New(log, cfg)
+	application := app.New(ctx, log, cfg)
 
-	application.Server.MustRun()
+	application.Server.MustRun(ctx)
+
+	// TODO: graceful shutdown
 }

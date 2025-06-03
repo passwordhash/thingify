@@ -1,6 +1,7 @@
 package app
 
 import (
+	"context"
 	"log/slog"
 	"thingify/internal/app/server"
 	"thingify/internal/config"
@@ -12,7 +13,7 @@ type App struct {
 	Server *server.App
 }
 
-func New(log *slog.Logger, cfg *config.Config) *App {
+func New(_ context.Context, log *slog.Logger, cfg *config.Config) *App {
 	ghClient := github.Register(log, cfg.GH.BaseURL, cfg.GHQueriesPath)
 
 	monitorService := monitor.New(log, ghClient)
