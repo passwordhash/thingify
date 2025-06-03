@@ -3,6 +3,8 @@ package main
 import (
 	"log/slog"
 	"os"
+	"os/signal"
+	"syscall"
 	"thingify/internal/app"
 	"thingify/internal/config"
 	"time"
@@ -34,7 +36,16 @@ func main() {
 
 	application := app.New(ctx, log, cfg)
 
-	application.Server.MustRun(ctx)
+	go application.Server.MustRun(ctx)
 
-	// TODO: graceful shutdown
+	stop := make(chan os.Signal, 1)
+	signal.Notify(stop, os.Interrupt, os.Kill, syscall.SIGTERM, syscall.SIGINT)
+
+	sign := <-stop
+
+	log.Info("received signal", "signal", sign)
+
+	application.Server.Stop()
+
+	log.Info("stopped Thingify application server")
 }

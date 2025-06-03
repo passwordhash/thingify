@@ -45,3 +45,12 @@ func (a *App) Run(ctx context.Context) error {
 
 	return nil
 }
+
+// Stop останавливает сервер
+func (a *App) Stop() {
+	const op = "server.Stop"
+
+	log := a.log.With("op", op)
+
+	log.Info("stopping server")
+}
