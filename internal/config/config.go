@@ -3,7 +3,8 @@ package config
 import "github.com/ilyakaznacheev/cleanenv"
 
 type Config struct {
-	GH GHConfig `yaml:"github"`
+	GH            GHConfig `yaml:"github"`
+	GHQueriesPath string   `yaml:"github_queries_path" env:"GH_QUERIES_PATH" env-default:"./queries/github"`
 }
 
 type GHConfig struct {

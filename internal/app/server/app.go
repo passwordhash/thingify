@@ -2,7 +2,8 @@ package server
 
 import (
 	"log/slog"
-	"thingify/server/internal/github"
+	"os"
+	"thingify/internal/github"
 )
 
 type App struct {
@@ -12,13 +13,13 @@ type App struct {
 }
 
 func New(
-    logger *slog.Logger,
-    port int,
-    ghBaseURL string,
-    ghToken string,
+	logger *slog.Logger,
+	port int,
+	ghBaseURL string,
+	ghQueriesPath string,
 ) *App {
 
-	ghClient := github.Register(logger, ghBaseURL, ghToken)
+	ghClient := github.Register(logger, ghBaseURL, ghQueriesPath)
 
 	return &App{
 		log:      logger,
@@ -27,5 +28,5 @@ func New(
 }
 
 func (a *App) MustRun() {
-
+	a.ghClient.UserIssues(os.Getenv("GH_TOKEN"))
 }

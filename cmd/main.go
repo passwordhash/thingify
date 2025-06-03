@@ -3,8 +3,8 @@ package main
 import (
 	"log/slog"
 	"os"
-	"thingify/server/internal/app"
-	"thingify/server/internal/config"
+	"thingify/internal/app"
+	"thingify/internal/config"
 	"time"
 
 	"github.com/lmittmann/tint"

@@ -2,8 +2,8 @@ package app
 
 import (
 	"log/slog"
-	"thingify/server/internal/app/server"
-	"thingify/server/internal/config"
+	"thingify/internal/app/server"
+	"thingify/internal/config"
 )
 
 type App struct {
@@ -12,7 +12,7 @@ type App struct {
 
 func New(log *slog.Logger, cfg *config.Config) *App {
 	port := 8080 // TMP
-	srvApp := server.New(log, port, cfg.GH.BaseURL, cfg.GH.Token)
+	srvApp := server.New(log, port, cfg.GH.BaseURL, cfg.GHQueriesPath)
 
 	return &App{
 		Server: srvApp,
