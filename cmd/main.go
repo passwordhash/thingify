@@ -11,6 +11,12 @@ import (
 )
 
 func main() {
+	defer func() {
+		if r := recover(); r != nil {
+			slog.Error("application panic", "err", r)
+		}
+	}()
+
 	w := os.Stdout
 	log := slog.New(tint.NewHandler(w, &tint.Options{
 		Level:      slog.LevelInfo,

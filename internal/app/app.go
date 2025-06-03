@@ -4,6 +4,8 @@ import (
 	"log/slog"
 	"thingify/internal/app/server"
 	"thingify/internal/config"
+	"thingify/internal/github"
+	"thingify/internal/service/monitor"
 )
 
 type App struct {
@@ -11,8 +13,11 @@ type App struct {
 }
 
 func New(log *slog.Logger, cfg *config.Config) *App {
-	port := 8080 // TMP
-	srvApp := server.New(log, port, cfg.GH.BaseURL, cfg.GHQueriesPath)
+	ghClient := github.Register(log, cfg.GH.BaseURL, cfg.GHQueriesPath)
+
+	monitorService := monitor.New(log, ghClient)
+
+	srvApp := server.New(log, monitorService)
 
 	return &App{
 		Server: srvApp,

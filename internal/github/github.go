@@ -2,6 +2,7 @@ package github
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -15,6 +16,7 @@ import (
 
 const userIssuesQueryFile = "user_issues.graphql"
 
+// TODO: нужен ли здесь логгер?
 type GHClient struct {
 	log *slog.Logger
 
@@ -34,7 +36,7 @@ func Register(
 	}
 }
 
-func (c *GHClient) UserIssues(userToken string) ([]model.Issue, error) {
+func (c *GHClient) UserIssues(_ context.Context, userToken string) ([]model.Issue, error) {
 	const op = "github.UserIssues"
 
 	const num = 100 // TMP: количество записей
@@ -94,7 +96,7 @@ func (c *GHClient) UserIssues(userToken string) ([]model.Issue, error) {
 	return issuesResp.Data.Viewer.Issues.Nodes, nil
 }
 
-func (c *GHClient) Issues(userToken string) ([]model.Issue, error) {
+func (c *GHClient) Issues(_ context.Context, userToken string) ([]model.Issue, error) {
 	const op = "github.Issues"
 
 	url := fmt.Sprintf("%s/issues", c.BaseURL)
