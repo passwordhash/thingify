@@ -28,6 +28,8 @@ func New(
 	}
 }
 
+var IssuesDB []model.Issue // TODO: убрать глобальную переменную
+
 // ShortPollingNewIssues возвращает новые задачи пользователя, используя короткое опрос
 func (m *Service) ShortPollingNewIssues(
 	ctx context.Context,
@@ -38,11 +40,15 @@ func (m *Service) ShortPollingNewIssues(
 
 	log := m.log.With("op", op)
 
-	log.Info("starting short polling for new issues", "pollingInterval", pollingInterval)
+	// ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
+	// defer cancel()
+
+	log.InfoContext(ctx, "starting short polling for new issues", "pollingInterval", pollingInterval)
 
 	// TODO: context with timeout
 
-	issueSlices := make(chan []model.Issue) // TODO: может лучше ссылка на Issue?
+	pulledIssues := make(chan []model.Issue) // TODO: может лучше ссылка на Issue?
+	newIssues := make(chan model.Issue, 5)
 
 	ticker := time.NewTicker(pollingInterval)
 	defer ticker.Stop()
@@ -54,21 +60,80 @@ func (m *Service) ShortPollingNewIssues(
 				// TODO: не забыть про обработку ошибок
 				i, _ := m.issuesProvider.UserIssues(ctx, userToken)
 
-				issueSlices <- i
+				pulledIssues <- i
+			case <-ctx.Done():
+				log.InfoContext(ctx, "stopping short polling for new issues")
+				close(pulledIssues)
+				return
 			}
 		}
 	}()
 
-	for issues := range issueSlices {
-		// if len(issue) > 0 {
-		// 	log.Info("new issues found", "count", len(issue))
-		// return issue, nil
-		// }
-		log.Info("new issues found", "count", len(issues))
-		for _, issue := range issues {
-			log.Info("issue found", "issue", issue.ID, "title", issue.Title, "createdAt", issue.CreatedAt)
+	go func() {
+		for {
+			select {
+			case issues := <-pulledIssues:
+				if len(issues) == 0 {
+					continue
+				}
+
+				// for _, issue := range issues {
+				// ...
+				// }
+				for _, newIssue := range issues {
+					// if lastIssue := lastIssueCreatedAt(IssuesDB); lastIssue != nil {
+					// ...
+					newIssues <- newIssue
+				}
+
+			case <-ctx.Done():
+				log.InfoContext(ctx, "stopping processing pulled issues")
+				close(newIssues)
+				return
+			}
+		}
+	}()
+
+	for newIssue := range newIssues {
+		log.InfoContext(ctx, "new issue found", "issueID", newIssue.ID, "title", newIssue.Title, "createdAt", newIssue.CreatedAt)
+	}
+
+	// for issues := range issueSlices {
+	// 	// if len(issue) > 0 {
+	// 	// 	log.Info("new issues found", "count", len(issue))
+	// 	// return issue, nil
+	// 	// }
+	// 	log.Info("new issues found", "count", len(issues))
+	// 	for _, issue := range issues {
+	// 		log.Info("issue found", "issue", issue.ID, "title", issue.Title, "createdAt", issue.CreatedAt)
+	// 	}
+	// }
+
+	return nil, nil // TODO: return issues
+}
+
+func lastIssueCreatedAt(issues []model.Issue) *model.Issue {
+	if len(issues) == 0 {
+		return nil
+	}
+
+	lastIssue := issues[0]
+	for _, issue := range issues {
+		t1, err := time.Parse("2025-06-02T16:39:26Z", issue.CreatedAt)
+		if err != nil {
+			panic(err)
+		}
+
+		t, err := time.Parse("2025-06-02T16:39:26Z", lastIssue.CreatedAt)
+		if err != nil {
+			panic(err)
+		}
+
+		// if issue.CreatedAt.After(lastIssue.CreatedAt) {
+		if t1.After(t) {
+			lastIssue = issue
 		}
 	}
 
-	return nil, nil // TODO: return issues
+	return &lastIssue
 }
