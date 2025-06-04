@@ -10,18 +10,24 @@ type Issue struct {
 	State     string
 	URL       string
 	CreatedAt time.Time
-	UpdatedAt time.Ticker
-	Labels    []struct {
-		Name  string
-		Color string
-	}
-	Repository struct {
-		Name     string
-		FullName string
-		HTMLURL  string
-	}
-	Assignees []struct {
-		Login   string
-		HTMLURL string
-	}
+	UpdatedAt time.Time
+	Labels    []Label
+	Asignees  []Assignee
+	Repository
+}
+
+type Label struct {
+	Name  string
+	Color string
+}
+
+type Repository struct {
+	Name     string
+	FullName string
+	HTMLURL  string
+}
+
+type Assignee struct {
+	Login   string
+	HTMLURL string
 }

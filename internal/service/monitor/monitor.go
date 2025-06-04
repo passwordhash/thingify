@@ -40,12 +40,11 @@ func (m *Service) ShortPollingNewIssues(
 
 	log := m.log.With("op", op)
 
-	// ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
-	// defer cancel()
-
 	log.InfoContext(ctx, "starting short polling for new issues", "pollingInterval", pollingInterval)
 
 	// TODO: context with timeout
+	// ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
+	// defer cancel()
 
 	pulledIssues := make(chan []model.Issue) // TODO: может лучше ссылка на Issue?
 	newIssues := make(chan model.Issue, 5)
@@ -77,9 +76,6 @@ func (m *Service) ShortPollingNewIssues(
 					continue
 				}
 
-				// for _, issue := range issues {
-				// ...
-				// }
 				for _, newIssue := range issues {
 					// if lastIssue := lastIssueCreatedAt(IssuesDB); lastIssue != nil {
 					// ...
@@ -98,42 +94,5 @@ func (m *Service) ShortPollingNewIssues(
 		log.InfoContext(ctx, "new issue found", "issueID", newIssue.ID, "title", newIssue.Title, "createdAt", newIssue.CreatedAt)
 	}
 
-	// for issues := range issueSlices {
-	// 	// if len(issue) > 0 {
-	// 	// 	log.Info("new issues found", "count", len(issue))
-	// 	// return issue, nil
-	// 	// }
-	// 	log.Info("new issues found", "count", len(issues))
-	// 	for _, issue := range issues {
-	// 		log.Info("issue found", "issue", issue.ID, "title", issue.Title, "createdAt", issue.CreatedAt)
-	// 	}
-	// }
-
 	return nil, nil // TODO: return issues
-}
-
-func lastIssueCreatedAt(issues []model.Issue) *model.Issue {
-	if len(issues) == 0 {
-		return nil
-	}
-
-	lastIssue := issues[0]
-	for _, issue := range issues {
-		t1, err := time.Parse("2025-06-02T16:39:26Z", issue.CreatedAt)
-		if err != nil {
-			panic(err)
-		}
-
-		t, err := time.Parse("2025-06-02T16:39:26Z", lastIssue.CreatedAt)
-		if err != nil {
-			panic(err)
-		}
-
-		// if issue.CreatedAt.After(lastIssue.CreatedAt) {
-		if t1.After(t) {
-			lastIssue = issue
-		}
-	}
-
-	return &lastIssue
 }

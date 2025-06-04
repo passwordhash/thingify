@@ -9,7 +9,9 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
-	"thingify/internal/model"
+	"thingify/internal/converter"
+	"thingify/internal/domain/model"
+	ghmodel "thingify/internal/github/model"
 
 	jsoniter "github.com/json-iterator/go"
 )
@@ -39,7 +41,7 @@ func Register(
 func (c *GHClient) UserIssues(_ context.Context, userToken string) ([]model.Issue, error) {
 	const op = "github.UserIssues"
 
-	const num = 100 // TMP: количество записей
+	const num = 1 // TMP: количество записей
 
 	log := c.log.With("op", op)
 
@@ -86,14 +88,20 @@ func (c *GHClient) UserIssues(_ context.Context, userToken string) ([]model.Issu
 	}
 	defer resp.Body.Close()
 
-	var issuesResp model.UserIssuesResponse
+	var issuesResp ghmodel.UserIssuesResponse
 	var json = jsoniter.ConfigCompatibleWithStandardLibrary
 	if err := json.Unmarshal(body, &issuesResp); err != nil {
 		log.Error("error unmarshalling response", "err", err)
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
 
-	return issuesResp.Data.Viewer.Issues.Nodes, nil
+	issues, err := converter.GithubToDomain(issuesResp.Data.Viewer.Issues.Nodes)
+	if err != nil {
+		log.Error("error converting GitHub issues to domain model", "err", err)
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return issues, nil
 }
 
 func (c *GHClient) Issues(_ context.Context, userToken string) ([]model.Issue, error) {
