@@ -4,7 +4,6 @@ import (
 	"context"
 	"log/slog"
 	"thingify/internal/domain/model"
-	"thingify/internal/github"
 	"time"
 )
 
@@ -30,11 +29,16 @@ type Service struct {
 
 func New(
 	log *slog.Logger,
-	ghClient *github.GHClient,
+	candidateIssuesProvider CandidateIssuesProvider,
+	issuesSaver IssuesSaver,
+	issuesProvider IssuesProvider,
+
 ) *Service {
 	return &Service{
 		log:                     log,
-		candidateIssuesProvider: ghClient,
+		candidateIssuesProvider: candidateIssuesProvider,
+		issuesSaver:             issuesSaver,
+		issuesProvider:          issuesProvider,
 	}
 }
 
