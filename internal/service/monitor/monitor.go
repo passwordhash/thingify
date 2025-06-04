@@ -8,14 +8,24 @@ import (
 	"time"
 )
 
-type IssuesProvider interface {
+type CandidateIssuesProvider interface {
 	UserIssues(ctx context.Context, userToken string, limit int) ([]model.Issue, error)
+}
+
+type IssuesSaver interface {
+	Save(ctx context.Context, login string, issue model.Issue) error
+}
+
+type IssuesProvider interface {
+	Issues(ctx context.Context, login string) ([]model.Issue, error)
 }
 
 type Service struct {
 	log *slog.Logger
 
-	issuesProvider IssuesProvider
+	candidateIssuesProvider CandidateIssuesProvider
+	issuesSaver             IssuesSaver
+	issuesProvider          IssuesProvider
 }
 
 func New(
@@ -23,12 +33,10 @@ func New(
 	ghClient *github.GHClient,
 ) *Service {
 	return &Service{
-		log:            log,
-		issuesProvider: ghClient,
+		log:                     log,
+		candidateIssuesProvider: ghClient,
 	}
 }
-
-var IssuesDB []model.Issue // TODO: убрать глобальную переменную
 
 // ShortPollingNewIssues возвращает новые задачи пользователя, используя короткое опрос
 func (m *Service) ShortPollingNewIssues(
@@ -58,10 +66,11 @@ func (m *Service) ShortPollingNewIssues(
 			case <-ticker.C:
 				const limit = 30 // TODO: сделать параметром
 				// TODO: не забыть про обработку ошибок
-				i, _ := m.issuesProvider.UserIssues(ctx, userToken, 30)
+				i, _ := m.candidateIssuesProvider.UserIssues(ctx, userToken, 30)
 
 				pulledIssues <- i
 			case <-ctx.Done():
+				// TODO: скорее всегда нужно будет завершать толко получение новых задач
 				log.InfoContext(ctx, "stopping short polling for new issues")
 				close(pulledIssues)
 				return
@@ -78,7 +87,14 @@ func (m *Service) ShortPollingNewIssues(
 				}
 
 				for _, candidateIssue := range issues {
-					latestDBTimeIssue := latestTimeIssue(IssuesDB)
+					// TODO: TEMP: логин — токен
+					// TODO: обработка ошибок
+					dbIssues, err := m.issuesProvider.Issues(ctx, userToken)
+					if err != nil {
+						log.ErrorContext(ctx, "error getting issues from DB", "err", err)
+					}
+
+					latestDBTimeIssue := latestTimeIssue(dbIssues)
 					if latestDBTimeIssue == nil {
 						newIssues <- candidateIssue
 						continue
@@ -99,7 +115,7 @@ func (m *Service) ShortPollingNewIssues(
 	}()
 
 	for newIssue := range newIssues {
-		IssuesDB = append(IssuesDB, newIssue) // TODO: mock db запись
+		m.issuesSaver.Save(ctx, userToken, newIssue)
 		log.InfoContext(ctx, "new issue found", "issueID", newIssue.ID, "title", newIssue.Title, "createdAt", newIssue.CreatedAt)
 	}
 
