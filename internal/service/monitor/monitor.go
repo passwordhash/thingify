@@ -2,6 +2,7 @@ package monitor
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 	"thingify/internal/domain/model"
 	"thingify/internal/github"
@@ -92,6 +93,7 @@ func (m *Service) ShortPollingNewIssues(
 
 	for newIssue := range newIssues {
 		log.InfoContext(ctx, "new issue found", "issueID", newIssue.ID, "title", newIssue.Title, "createdAt", newIssue.CreatedAt)
+		fmt.Printf("%+v\n", newIssue)
 	}
 
 	return nil, nil // TODO: return issues
