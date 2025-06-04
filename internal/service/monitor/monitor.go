@@ -2,7 +2,6 @@ package monitor
 
 import (
 	"context"
-	"fmt"
 	"log/slog"
 	"thingify/internal/domain/model"
 	"thingify/internal/github"
@@ -10,7 +9,7 @@ import (
 )
 
 type IssuesProvider interface {
-	UserIssues(ctx context.Context, userToken string) ([]model.Issue, error)
+	UserIssues(ctx context.Context, userToken string, limit int) ([]model.Issue, error)
 }
 
 type Service struct {
@@ -57,8 +56,9 @@ func (m *Service) ShortPollingNewIssues(
 		for {
 			select {
 			case <-ticker.C:
+				const limit = 30 // TODO: сделать параметром
 				// TODO: не забыть про обработку ошибок
-				i, _ := m.issuesProvider.UserIssues(ctx, userToken)
+				i, _ := m.issuesProvider.UserIssues(ctx, userToken, 30)
 
 				pulledIssues <- i
 			case <-ctx.Done():
@@ -77,10 +77,17 @@ func (m *Service) ShortPollingNewIssues(
 					continue
 				}
 
-				for _, newIssue := range issues {
-					// if lastIssue := lastIssueCreatedAt(IssuesDB); lastIssue != nil {
-					// ...
-					newIssues <- newIssue
+				for _, candidateIssue := range issues {
+					latestDBTimeIssue := latestTimeIssue(IssuesDB)
+					if latestDBTimeIssue == nil {
+						newIssues <- candidateIssue
+						continue
+					}
+
+					if candidateIssue.CreatedAt.After(*latestDBTimeIssue) {
+						newIssues <- candidateIssue
+						continue
+					}
 				}
 
 			case <-ctx.Done():
@@ -92,9 +99,25 @@ func (m *Service) ShortPollingNewIssues(
 	}()
 
 	for newIssue := range newIssues {
+		IssuesDB = append(IssuesDB, newIssue) // TODO: mock db запись
 		log.InfoContext(ctx, "new issue found", "issueID", newIssue.ID, "title", newIssue.Title, "createdAt", newIssue.CreatedAt)
-		fmt.Printf("%+v\n", newIssue)
 	}
 
 	return nil, nil // TODO: return issues
+}
+
+// latestTimeIssue находит самую последнюю задачу по времени создания.
+// Если список задач пуст, возвращает nil.
+func latestTimeIssue(issues []model.Issue) *time.Time {
+	if len(issues) == 0 {
+		return nil
+	}
+
+	latest := &issues[0].CreatedAt
+	for i := 1; i < len(issues); i++ {
+		if issues[i].CreatedAt.After(*latest) {
+			latest = &issues[i].CreatedAt
+		}
+	}
+	return latest
 }

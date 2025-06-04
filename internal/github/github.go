@@ -38,10 +38,8 @@ func Register(
 	}
 }
 
-func (c *GHClient) UserIssues(_ context.Context, userToken string) ([]model.Issue, error) {
+func (c *GHClient) UserIssues(_ context.Context, userToken string, limit int) ([]model.Issue, error) {
 	const op = "github.UserIssues"
-
-	const num = 1 // TMP: количество записей
 
 	log := c.log.With("op", op)
 
@@ -55,7 +53,7 @@ func (c *GHClient) UserIssues(_ context.Context, userToken string) ([]model.Issu
 	payload := map[string]any{
 		"query": query,
 		"variables": map[string]any{
-			"num": num,
+			"num": limit,
 		},
 	}
 

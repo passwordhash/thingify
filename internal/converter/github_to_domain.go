@@ -24,10 +24,10 @@ func GithubToDomain(nodes []ghmodel.IssueNode) ([]model.Issue, error) {
 			return nil, fmt.Errorf("%w: %v", convertTimeErr, err)
 		}
 
-		updatedAt, err := time.Parse(time.RFC3339, node.UpdatedAt)
-		if err != nil {
-			return nil, fmt.Errorf("%w: %v", convertTimeErr, err)
-		}
+		// updatedAt, err := time.Parse(time.RFC3339, node.UpdatedAt)
+		// if err != nil {
+		// 	return nil, fmt.Errorf("%w: %v", convertTimeErr, err)
+		// }
 
 		issue := model.Issue{
 			ID:        node.ID,
@@ -36,9 +36,7 @@ func GithubToDomain(nodes []ghmodel.IssueNode) ([]model.Issue, error) {
 			State:     node.State,
 			URL:       node.URL,
 			CreatedAt: createdAt,
-			UpdatedAt: updatedAt,
-			// CreatedAt: node.CreatedAt,
-			// UpdatedAt: node.UpdatedAt,
+			// UpdatedAt: updatedAt, // TODO: uncomment when needed
 			Number: node.Number,
 			// Labels:
 			// Repository:

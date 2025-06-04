@@ -41,7 +41,7 @@ func (a *App) Run(ctx context.Context) error {
 	log.Info("starting server")
 
 	a.monitorService.ShortPollingNewIssues(
-		ctx, os.Getenv("GH_TOKEN"), 15*time.Second)
+		ctx, os.Getenv("GH_TOKEN"), 7*time.Second)
 
 	return nil
 }
