@@ -14,11 +14,11 @@ type App struct {
 }
 
 func New(_ context.Context, log *slog.Logger, cfg *config.Config) *App {
-	ghClient := github.Register(log, cfg.GH.BaseURL, cfg.GHQueriesPath)
+	ghClient := github.Register(log, cfg.GH.BaseURL, cfg.App.GHQueriesPath)
 
 	monitorService := monitor.New(log, ghClient)
 
-	srvApp := server.New(log, monitorService, cfg.PollingInterval)
+	srvApp := server.New(log, monitorService, cfg.App.PollingInterval)
 
 	return &App{
 		Server: srvApp,

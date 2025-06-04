@@ -1,0 +1,8 @@
+version: "3"
+
+app:
+    github_queries_path: "./queries/github"
+    polling_interval: 5s
+
+github:
+    api_url: "https://api.github.com"
