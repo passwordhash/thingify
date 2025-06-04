@@ -3,8 +3,8 @@ package monitor
 import (
 	"context"
 	"log/slog"
+	"thingify/internal/domain/model"
 	"thingify/internal/github"
-	"thingify/internal/model"
 	"time"
 )
 

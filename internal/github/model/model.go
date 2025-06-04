@@ -1,16 +1,16 @@
-package model
+package ghmodel
 
 type UserIssuesResponse struct {
 	Data struct {
 		Viewer struct {
 			Issues struct {
-				Nodes []Issue `json:"nodes"`
+				Nodes []IssueNode `json:"nodes"`
 			} `json:"issues"`
 		} `json:"viewer"`
 	} `json:"data"`
 }
 
-type Issue struct {
+type IssueNode struct {
 	ID         string     `json:"id"`
 	Number     int        `json:"number"`
 	Title      string     `json:"title"`
@@ -34,9 +34,8 @@ type Label struct {
 }
 
 type Assignees struct {
-	Login     string `json:"login"`
-	AvatarURL string `json:"avatar_url"`
-	HTMLURL   string `json:"html_url"`
+	Login   string `json:"login"`
+	HTMLURL string `json:"html_url"`
 }
 
 type Repository struct {
