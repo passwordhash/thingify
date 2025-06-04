@@ -18,7 +18,7 @@ func New(_ context.Context, log *slog.Logger, cfg *config.Config) *App {
 
 	monitorService := monitor.New(log, ghClient)
 
-	srvApp := server.New(log, monitorService)
+	srvApp := server.New(log, monitorService, cfg.PollingInterval)
 
 	return &App{
 		Server: srvApp,

@@ -13,15 +13,19 @@ type App struct {
 	log *slog.Logger
 
 	monitorService *monitor.Service
+
+	pollingInterval time.Duration
 }
 
 func New(
 	log *slog.Logger,
 	monitorService *monitor.Service,
+	pollingInterval time.Duration,
 ) *App {
 	return &App{
-		log:            log,
-		monitorService: monitorService,
+		log:             log,
+		monitorService:  monitorService,
+		pollingInterval: pollingInterval,
 	}
 }
 
@@ -41,7 +45,7 @@ func (a *App) Run(ctx context.Context) error {
 	log.Info("starting server")
 
 	a.monitorService.ShortPollingNewIssues(
-		ctx, os.Getenv("GH_TOKEN"), 7*time.Second)
+		ctx, os.Getenv("GH_TOKEN"), a.pollingInterval)
 
 	return nil
 }

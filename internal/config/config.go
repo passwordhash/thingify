@@ -1,10 +1,15 @@
 package config
 
-import "github.com/ilyakaznacheev/cleanenv"
+import (
+	"time"
+
+	"github.com/ilyakaznacheev/cleanenv"
+)
 
 type Config struct {
-	GH            GHConfig `yaml:"github"`
-	GHQueriesPath string   `yaml:"github_queries_path" env:"GH_QUERIES_PATH" env-default:"./queries/github"`
+	GH              GHConfig      `yaml:"github"`
+	GHQueriesPath   string        `env:"GH_QUERIES_PATH" yaml:"github_queries_path" env-default:"./queries/github"`
+	PollingInterval time.Duration `env:"POLLING_INTERVAL" yaml:"polling_interval" env-required:"true"`
 }
 
 type GHConfig struct {
