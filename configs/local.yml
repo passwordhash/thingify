@@ -2,7 +2,7 @@ version: "3"
 
 app:
     github_queries_path: "./queries/github"
-    polling_interval: 5s
+    polling_interval: 20s
 
 rabbitmq:
     host: "localhost"

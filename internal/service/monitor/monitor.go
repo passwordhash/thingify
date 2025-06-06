@@ -19,12 +19,17 @@ type IssuesProvider interface {
 	Issues(ctx context.Context, login string) ([]model.Issue, error)
 }
 
+type IssuesPublisher interface {
+	Publish(ctx context.Context, login string, issue any) error
+}
+
 type Service struct {
 	log *slog.Logger
 
 	candidateIssuesProvider CandidateIssuesProvider
 	issuesSaver             IssuesSaver
 	issuesProvider          IssuesProvider
+	issuesPublisher         IssuesPublisher
 }
 
 func New(
@@ -32,13 +37,14 @@ func New(
 	candidateIssuesProvider CandidateIssuesProvider,
 	issuesSaver IssuesSaver,
 	issuesProvider IssuesProvider,
-
+	issuesPublisher IssuesPublisher,
 ) *Service {
 	return &Service{
 		log:                     log,
 		candidateIssuesProvider: candidateIssuesProvider,
 		issuesSaver:             issuesSaver,
 		issuesProvider:          issuesProvider,
+		issuesPublisher:         issuesPublisher,
 	}
 }
 
@@ -120,6 +126,7 @@ func (m *Service) ShortPollingNewIssues(
 
 	for newIssue := range newIssues {
 		m.issuesSaver.Save(ctx, userToken, newIssue)
+		m.issuesPublisher.Publish(ctx, "tmp-login", newIssue)
 		log.InfoContext(ctx, "new issue found", "issueID", newIssue.ID, "title", newIssue.Title, "createdAt", newIssue.CreatedAt)
 	}
 

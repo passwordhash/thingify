@@ -2,6 +2,7 @@ package config
 
 import (
 	"flag"
+	"fmt"
 	"os"
 	"time"
 
@@ -25,6 +26,10 @@ type RabbitMQConfig struct {
 	User          string `yaml:"user" env:"RABBITMQ_USER" env-required:"true"`
 	Pass          string `yaml:"pass" env:"RABBITMQ_PASS" env-required:"true"`
 	IssueExchange string `yaml:"issue_exchange" env:"RABBITMQ_ISSUE_EXCHANGE" env-default:"issue_exchange"`
+}
+
+func (c *RabbitMQConfig) URL() string {
+	return fmt.Sprintf("amqp://%s:%s@%s:%d/", c.User, c.Pass, c.Host, c.Port)
 }
 
 type GHConfig struct {
