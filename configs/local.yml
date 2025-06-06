@@ -4,5 +4,11 @@ app:
     github_queries_path: "./queries/github"
     polling_interval: 5s
 
+rabbitmq:
+    host: "localhost"
+    port: 5672
+    username: { $RABBITMQ_USER }
+    password: { $RABBITMQ_PASSWORD }
+
 github:
     api_url: "https://api.github.com"
