@@ -9,6 +9,7 @@ rabbitmq:
     port: 5672
     username: { $RABBITMQ_USER }
     password: { $RABBITMQ_PASSWORD }
+    issue_exchange: "github_issue"
 
 github:
     api_url: "https://api.github.com"

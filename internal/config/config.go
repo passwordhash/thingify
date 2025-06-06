@@ -20,10 +20,11 @@ type AppConfig struct {
 }
 
 type RabbitMQConfig struct {
-	Host string `yaml:"host" env:"RABBITMQ_HOST" env-required:"true"`
-	Port int    `yaml:"port" env:"RABBITMQ_PORT" env-required:"true"`
-	User string `yaml:"user" env:"RABBITMQ_USER" env-required:"true"`
-	Pass string `yaml:"pass" env:"RABBITMQ_PASS" env-required:"true"`
+	Host          string `yaml:"host" env:"RABBITMQ_HOST" env-required:"true"`
+	Port          int    `yaml:"port" env:"RABBITMQ_PORT" env-required:"true"`
+	User          string `yaml:"user" env:"RABBITMQ_USER" env-required:"true"`
+	Pass          string `yaml:"pass" env:"RABBITMQ_PASS" env-required:"true"`
+	IssueExchange string `yaml:"issue_exchange" env:"RABBITMQ_ISSUE_EXCHANGE" env-default:"issue_exchange"`
 }
 
 type GHConfig struct {
