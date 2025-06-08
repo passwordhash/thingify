@@ -24,6 +24,7 @@ func New(ctx context.Context, log *slog.Logger, cfg *config.Config) *App {
 		log.ErrorContext(ctx, "failed to create RabbitMQ producer", slog.Any("error", err))
 		os.Exit(1)
 	}
+	log.InfoContext(ctx, "RabbitMQ producer created successfully")
 
 	ghClient := github.Register(log, cfg.GH.BaseURL, cfg.App.GHQueriesPath)
 

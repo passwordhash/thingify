@@ -24,7 +24,7 @@ Thingify — это сервис для мониторинга новых зад
 - **internal/converter** — преобразование моделей GitHub в доменные модели приложения
 - **internal/config** — загрузка и валидация конфигурации
 
-## Быстрый старт
+## Быстрый старт (локальная разработка)
 
 1. Установите зависимости:
 
@@ -32,7 +32,9 @@ Thingify — это сервис для мониторинга новых зад
     go mod download
     ```
 
-2. Создайте файл `.env` и укажите ваш GitHub Token:
+<!-- TODO: блок про получение githbu token -->
+
+2. Создайте файл `.env` на основе `.env.example` и укажите ваш GitHub Token:
 
     ```
     GH_TOKEN=your_github_token
@@ -40,6 +42,7 @@ Thingify — это сервис для мониторинга новых зад
 
 3. Запустите приложение:
     ```sh
+    docker-compose -f docker-compose.dev.yml up -d --build
     go run ./cmd/main.go -config=./configs/local.yml
     ```
     или через Taskfile:
