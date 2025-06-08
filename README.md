@@ -12,7 +12,7 @@ Thingify — это сервис для мониторинга новых зад
 
 ## Архитектура
 
-<img src="resources/architecture.png" style="width:50%;" />
+<img src="assets/architecture.png" style="width:50%;" />
 
 <!-- ![Архитектура приложения](resources/architecture.png) -->
 
@@ -27,11 +27,13 @@ Thingify — это сервис для мониторинга новых зад
 ## Быстрый старт
 
 1. Установите зависимости:
+
     ```sh
     go mod download
     ```
 
 2. Создайте файл `.env` и укажите ваш GitHub Token:
+
     ```
     GH_TOKEN=your_github_token
     ```
