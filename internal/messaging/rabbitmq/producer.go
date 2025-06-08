@@ -13,44 +13,8 @@ const (
 )
 
 type producer struct {
-	conn          *mq.Connection
-	chann         *mq.Channel
+	ch            *mq.Channel
 	issueExchange string
-}
-
-func New(url, issueExchange string) (*producer, error) {
-	const op = "rabbitmq.New"
-
-	conn, err := mq.Dial(url)
-	if err != nil {
-		return nil, fmt.Errorf("%s: failed to connect to RabbitMQ: %w", op, err)
-	}
-
-	ch, err := conn.Channel()
-	if err != nil {
-		conn.Close()
-		return nil, fmt.Errorf("%s: failed to open channel: %w", op, err)
-	}
-
-	err = ch.ExchangeDeclare(
-		issueExchange,
-		directExchangeKind,
-		false,
-		false, // autodelete
-		false,
-		false,
-		nil)
-	if err != nil {
-		ch.Close()
-		conn.Close()
-		return nil, fmt.Errorf("%s: failed to declare exchange %s: %w", op, issueExchange, err)
-	}
-
-	return &producer{
-		conn:          conn,
-		chann:         ch,
-		issueExchange: issueExchange,
-	}, nil
 }
 
 func (p *producer) Publish(ctx context.Context, routingKey string, payload any) error {
@@ -63,7 +27,7 @@ func (p *producer) Publish(ctx context.Context, routingKey string, payload any) 
 
 	const tmp_route_key = "users"
 
-	p.chann.PublishWithContext(ctx,
+	p.ch.PublishWithContext(ctx,
 		p.issueExchange,
 		tmp_route_key,
 		false, false,
@@ -77,6 +41,5 @@ func (p *producer) Publish(ctx context.Context, routingKey string, payload any) 
 }
 
 func (p *producer) Close() error {
-	_ = p.chann.Close()
-	return p.conn.Close()
+	return p.ch.Close()
 }
