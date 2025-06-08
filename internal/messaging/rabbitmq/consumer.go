@@ -40,7 +40,6 @@ func (c *consumer) Consume(ctx context.Context) (<-chan []byte, <-chan error) {
 				return
 			case msg, ok := <-msgs:
 				if !ok {
-					errCh <- fmt.Errorf("%s: channel closed", op)
 					return
 				}
 
