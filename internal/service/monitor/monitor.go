@@ -19,12 +19,28 @@ type IssuesProvider interface {
 	Issues(ctx context.Context, login string) ([]model.Issue, error)
 }
 
+type IssuesPublisher interface {
+	Publish(ctx context.Context, login string, issue any) error
+}
+
+// RequestsConsumer представляет собой интерфейс для потребления запросов на новые задачи.
+type RequestsConsumer interface {
+	// Consume начинает прослушивание канала запросов и возвращает каналы
+	// для получения данных и ошибок.
+	Consume(ctx context.Context) (<-chan []byte, <-chan error)
+
+	// Close закрывает канал потребителя и освобождает ресурсы.
+	Close() error
+}
+
 type Service struct {
 	log *slog.Logger
 
 	candidateIssuesProvider CandidateIssuesProvider
 	issuesSaver             IssuesSaver
 	issuesProvider          IssuesProvider
+	issuesPublisher         IssuesPublisher
+	reqConsumer             RequestsConsumer
 }
 
 func New(
@@ -32,13 +48,16 @@ func New(
 	candidateIssuesProvider CandidateIssuesProvider,
 	issuesSaver IssuesSaver,
 	issuesProvider IssuesProvider,
-
+	issuesPublisher IssuesPublisher,
+	reqConsumer RequestsConsumer,
 ) *Service {
 	return &Service{
 		log:                     log,
 		candidateIssuesProvider: candidateIssuesProvider,
 		issuesSaver:             issuesSaver,
 		issuesProvider:          issuesProvider,
+		issuesPublisher:         issuesPublisher,
+		reqConsumer:             reqConsumer,
 	}
 }
 
@@ -120,10 +139,44 @@ func (m *Service) ShortPollingNewIssues(
 
 	for newIssue := range newIssues {
 		m.issuesSaver.Save(ctx, userToken, newIssue)
+		m.issuesPublisher.Publish(ctx, "tmp-login", newIssue)
 		log.InfoContext(ctx, "new issue found", "issueID", newIssue.ID, "title", newIssue.Title, "createdAt", newIssue.CreatedAt)
 	}
 
 	return nil, nil // TODO: return issues
+}
+
+func (m *Service) StartRequestListener(ctx context.Context) {
+	const op = "monitor.StartRequestListener"
+
+	log := m.log.With("op", op)
+
+	dataCh, errCh := m.reqConsumer.Consume(ctx)
+	go func() {
+		defer m.reqConsumer.Close()
+		for {
+			select {
+			case <-ctx.Done():
+				log.InfoContext(ctx, "stopping request listener")
+				return
+			case msg, ok := <-dataCh:
+				if !ok {
+					m.log.InfoContext(ctx, "request listener channel closed")
+					return
+				}
+
+				log.InfoContext(ctx, "received request", "message", string(msg))
+			case errCh, ok := <-errCh:
+				if !ok {
+					log.InfoContext(ctx, "request listener error channel closed")
+					return
+				}
+
+				log.ErrorContext(ctx, "error in request listener", "error", errCh)
+				return
+			}
+		}
+	}()
 }
 
 // latestTimeIssue находит самую последнюю задачу по времени создания.

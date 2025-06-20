@@ -2,7 +2,6 @@ package server
 
 import (
 	"log/slog"
-	"os"
 	"thingify/internal/service/monitor"
 	"time"
 
@@ -44,13 +43,16 @@ func (a *App) Run(ctx context.Context) error {
 
 	log.Info("starting server")
 
-	a.monitorService.ShortPollingNewIssues(
-		ctx, os.Getenv("GH_TOKEN"), a.pollingInterval)
+	a.monitorService.StartRequestListener(ctx)
+
+	// a.monitorService.ShortPollingNewIssues(
+	// 	ctx, os.Getenv("GH_TOKEN"), a.pollingInterval)
 
 	return nil
 }
 
 // Stop останавливает сервер
+// TODO: stop rabbitmq client, producer, consumer, etc.
 func (a *App) Stop() {
 	const op = "server.Stop"
 

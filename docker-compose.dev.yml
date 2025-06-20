@@ -1,0 +1,19 @@
+version: "3"
+
+services:
+    rabbitmq:
+        image: rabbitmq:3-management
+        ports:
+            - "5672:5672"
+            - "15672:15672"
+        volumes:
+            - rabbitmq_data:/var/lib/rabbitmq
+        networks:
+            - message-bus
+
+volumes:
+    rabbitmq_data:
+
+networks:
+    backend:
+    message-bus:
