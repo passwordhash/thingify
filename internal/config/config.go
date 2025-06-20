@@ -2,6 +2,7 @@ package config
 
 import (
 	"flag"
+	"fmt"
 	"os"
 	"time"
 
@@ -9,13 +10,27 @@ import (
 )
 
 type Config struct {
-	App AppConfig `yaml:"app"`
-	GH  GHConfig  `yaml:"github"`
+	App      AppConfig      `yaml:"app"`
+	GH       GHConfig       `yaml:"github"`
+	RabbitMQ RabbitMQConfig `yaml:"rabbitmq"`
 }
 
 type AppConfig struct {
 	GHQueriesPath   string        `env:"GH_QUERIES_PATH" yaml:"github_queries_path" env-default:"./queries/github"`
 	PollingInterval time.Duration `env:"POLLING_INTERVAL" yaml:"polling_interval" env-required:"true"`
+}
+
+type RabbitMQConfig struct {
+	Host               string `yaml:"host" env:"RABBITMQ_HOST" env-required:"true"`
+	Port               int    `yaml:"port" env:"RABBITMQ_PORT" env-required:"true"`
+	User               string `yaml:"user" env:"RABBITMQ_USER" env-required:"true"`
+	Pass               string `yaml:"pass" env:"RABBITMQ_PASS" env-required:"true"`
+	IssueExchange      string `yaml:"issue_exchange" env:"RABBITMQ_ISSUE_EXCHANGE" env-default:"issue_exchange"`
+	CheckRequestsQueue string `yaml:"check_requests_queue" env:"RABBITMQ_CHECK_REQUESTS_QUEUE" env-default:"manual_check_requests"`
+}
+
+func (c *RabbitMQConfig) URL() string {
+	return fmt.Sprintf("amqp://%s:%s@%s:%d/", c.User, c.Pass, c.Host, c.Port)
 }
 
 type GHConfig struct {

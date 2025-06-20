@@ -1,8 +1,17 @@
 version: "3"
 
-dotenv: [.env]
+dotenv: [.env.local]
 
 tasks:
+    dev:
+        desc: Start app + infra
+        deps: [up-local]
+        cmds:
+            - task: run
+    up-local:
+        desc: Start the application infrastructure locally
+        cmds:
+            - docker-compose -f docker-compose.dev.yml up -d --build
     run:
         cmds:
             - go run ./cmd/main.go -config=./configs/local.yml
