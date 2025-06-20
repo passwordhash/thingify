@@ -14,4 +14,11 @@ tasks:
             - docker-compose -f docker-compose.dev.yml up -d --build
     run:
         cmds:
-            - go run ./cmd/main.go -config=./configs/local.yml
+            - go run ./cmd/http_server/main.go -config=./configs/local.yml
+
+    smee:
+        desc: Start smee.io to forward webhooks
+        cmds:
+            - |
+                smee -u https://smee.io/gbrbW0RXwD4ErqNa \
+                    --target http://localhost:3000/webhook/issue
