@@ -4,6 +4,7 @@ import (
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/hex"
+	"thingify/internal/http/response"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -14,8 +15,7 @@ func ValidateHubSignature(secret string) func(c *fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
 		sigHeader := c.Get(signatureHeader)
 		if sigHeader == "" {
-			// TODO: move to response package
-			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Missing signature"})
+			return response.BadRequest(c, nil, "Missing signature header")
 		}
 
 		body := c.Body()
@@ -24,8 +24,7 @@ func ValidateHubSignature(secret string) func(c *fiber.Ctx) error {
 		mac.Write(body)
 		expected := "sha256=" + hex.EncodeToString(mac.Sum(nil))
 		if !hmac.Equal([]byte(expected), []byte(sigHeader)) {
-			// TODO: move to response package
-			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Invalid signature"})
+			return response.Unauthorized(c, nil, "Invalid github signature")
 		}
 
 		return c.Next()
