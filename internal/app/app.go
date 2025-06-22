@@ -12,11 +12,14 @@ type App struct {
 }
 
 func New(_ context.Context,
-    log *slog.Logger,
-    cfg *config.Config,
+	log *slog.Logger,
+	cfg *config.Config,
 ) *App {
+	a := cfg.App
 	h := cfg.HTTP
-	srv := httpapp.New(log,
+	srv := httpapp.New(
+		log,
+		a.GithubWebhookSecret,
 		httpapp.WithPort(h.Port),
 		httpapp.WithReadTimeout(h.ReadTimeout),
 		httpapp.WithWriteTimeout(h.ReadTimeout),

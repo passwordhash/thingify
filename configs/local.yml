@@ -1,14 +1,13 @@
 version: "3"
 
+app:
+    env: "local"
+
 http:
     port: 8606
     read_timeout: 5s
     write_timeout: 5s
     gateway_timeout: 5s
-
-app:
-    github_queries_path: "./queries/github"
-    polling_interval: 20s
 
 rabbitmq:
     host: "localhost"

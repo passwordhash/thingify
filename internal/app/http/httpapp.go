@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"log/slog"
 	"sync"
+	"thingify/internal/http/webhook"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/timeout"
 )
 
 const (
@@ -21,6 +21,8 @@ const (
 // App представляет HTTP приложение, которое управляет сервером и его состоянием.
 type App struct {
 	log *slog.Logger
+
+	webhookSecret string
 
 	port           int
 	readTimeout    time.Duration
@@ -63,9 +65,10 @@ func WithRequestTimeout(timeout time.Duration) Option {
 }
 
 // New создает новое HTTP приложение.
-func New(log *slog.Logger, opts ...Option) *App {
+func New(log *slog.Logger, webhookSecret string, opts ...Option) *App {
 	app := &App{
 		log:            log,
+		webhookSecret:  webhookSecret,
 		port:           srvPortDefault,
 		readTimeout:    srvReadTimeoutDefault,
 		writeTimeout:   srvWriteTimeoutDefault,
@@ -102,7 +105,11 @@ func (a *App) Run(ctx context.Context) error {
 
 	fapp := fiber.New(cfg)
 
-	fapp.Get("/test", timeout.NewWithContext(testHandle, a.requestTimeout))
+	webhookHandler := webhook.NewHandler(a.webhookSecret)
+
+	baseRouter := fapp.Group("")
+
+	webhookHandler.RegisterRoutes(baseRouter)
 
 	a.mu.Lock()
 	a.fapp = fapp
@@ -111,21 +118,6 @@ func (a *App) Run(ctx context.Context) error {
 	addr := fmt.Sprintf("0.0.0.0:%d", a.port)
 
 	return fapp.Listen(addr)
-}
-
-func testHandle(c *fiber.Ctx) error {
-	go func() {
-		for {
-			for _, r := range "-\\|/" {
-				fmt.Printf("\r%c", r)
-				time.Sleep(200 * time.Millisecond)
-			}
-		}
-	}()
-
-	<-c.UserContext().Done()
-
-	return c.JSON("Hello")
 }
 
 // Stop останавливает HTTP сервер.

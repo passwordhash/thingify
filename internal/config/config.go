@@ -10,10 +10,16 @@ import (
 )
 
 type Config struct {
-	HTTP     HTTPConfig     `yaml:"http"`
 	App      AppConfig      `yaml:"app"`
+	HTTP     HTTPConfig     `yaml:"http"`
 	GH       GHConfig       `yaml:"github"`
 	RabbitMQ RabbitMQConfig `yaml:"rabbitmq"`
+}
+
+type AppConfig struct {
+	// TODO: check wether cleanenv can parse custom type like envType for ENV var
+	ENV                 string `yaml:"env" env:"APP_ENV" env-required:"true"`
+	GithubWebhookSecret string `yaml:"github_app_secret" env:"WEBHOOK_SECRET" env-required:"true"`
 }
 
 type HTTPConfig struct {
@@ -21,12 +27,6 @@ type HTTPConfig struct {
 	ReadTimeout    time.Duration `yaml:"read_timeout" env:"HTTP_READ_TIMEOUT" env-required:"true"`
 	WriteTimeout   time.Duration `yaml:"write_timeout" env:"HTTP_WRITE_TIMEOUT" env-required:"true"`
 	GatewayTimeout time.Duration `yaml:"gateway_timeout" env:"HTTP_GATEWAY_TIMEOUT" env-required:"true"`
-}
-
-// Deprecated: Use [HTTPConfig]
-type AppConfig struct {
-	GHQueriesPath   string        `env:"GH_QUERIES_PATH" yaml:"github_queries_path" env-default:"./queries/github"`
-	PollingInterval time.Duration `env:"POLLING_INTERVAL" yaml:"polling_interval" env-required:"true"`
 }
 
 type RabbitMQConfig struct {
