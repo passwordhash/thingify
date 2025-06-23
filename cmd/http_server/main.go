@@ -11,7 +11,7 @@ import (
 
 	"context"
 
-	"github.com/lmittmann/tint"
+	"github.com/gofiber/fiber/v2/log"
 )
 
 const (
@@ -30,17 +30,12 @@ func main() {
 
 	cfg := config.MustLoad()
 
-	// TODO: вынести в отдельный пакет
-	w := os.Stdout
-	log := slog.New(tint.NewHandler(w, &tint.Options{
-		Level:      slog.LevelInfo,
-		TimeFormat: time.TimeOnly,
-	}))
+	logger := config.NewLogger(cfg.App.ENV)
 
 	log.Info("starting Thingify application http_server...")
 	log.Debug("with config", "config", cfg)
 
-	application := app.New(ctx, log, cfg)
+	application := app.New(ctx, logger, cfg)
 
 	go application.Srv.MustRun(ctx)
 

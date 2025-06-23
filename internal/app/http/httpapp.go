@@ -5,10 +5,12 @@ import (
 	"fmt"
 	"log/slog"
 	"sync"
+	"thingify/internal/http/middleware"
 	"thingify/internal/http/webhook"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
+	recover "github.com/gofiber/fiber/v2/middleware/recover"
 )
 
 const (
@@ -104,6 +106,8 @@ func (a *App) Run(ctx context.Context) error {
 	}
 
 	fapp := fiber.New(cfg)
+	fapp.Use(recover.New())
+	fapp.Use(middleware.Logging(a.log))
 
 	webhookHandler := webhook.NewHandler(a.webhookSecret)
 

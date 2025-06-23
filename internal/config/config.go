@@ -9,6 +9,12 @@ import (
 	"github.com/ilyakaznacheev/cleanenv"
 )
 
+const (
+	devEnv  = "local"
+	prodEnv = "prod"
+	testEnv = "test"
+)
+
 type Config struct {
 	App      AppConfig      `yaml:"app"`
 	HTTP     HTTPConfig     `yaml:"http"`

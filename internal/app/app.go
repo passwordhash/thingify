@@ -11,14 +11,15 @@ type App struct {
 	Srv *httpapp.App
 }
 
-func New(_ context.Context,
+func New(
+	_ context.Context,
 	log *slog.Logger,
 	cfg *config.Config,
 ) *App {
 	a := cfg.App
 	h := cfg.HTTP
 	srv := httpapp.New(
-		log,
+		log.WithGroup("http"),
 		a.GithubWebhookSecret,
 		httpapp.WithPort(h.Port),
 		httpapp.WithReadTimeout(h.ReadTimeout),

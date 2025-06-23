@@ -5,7 +5,7 @@ go 1.24
 require (
 	github.com/gofiber/fiber/v2 v2.52.8
 	github.com/ilyakaznacheev/cleanenv v1.5.0
-	github.com/lmittmann/tint v1.1.1
+	github.com/lmittmann/tint v1.1.2
 	github.com/rabbitmq/amqp091-go v1.10.0
 )
 
