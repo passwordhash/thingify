@@ -1,33 +1,51 @@
 package model
 
-import "time"
+import (
+	"time"
+)
 
-type Issue struct {
-	ID        string
+type IssueAction struct {
+	Issue      IssueInfo
+	Repository GHRepository
+	Sender     GHUser
+}
+
+type IssueInfo struct {
+	ID        int64
 	Number    int
 	Title     string
-	Body      string
+	Body      *string
 	State     string
+	HTMLURL   string
 	URL       string
 	CreatedAt time.Time
 	UpdatedAt time.Time
+	ClosedAt  *time.Time
+	User      GHUser
+	Assignees []GHUser
 	Labels    []Label
-	Asignees  []Assignee
-	Repository
+}
+
+type GHRepository struct {
+	ID       int64
+	Name     string
+	FullName string
+	Private  bool
+	HTMLURL  string
+	Owner    GHUser
+}
+
+type GHUser struct {
+	ID        int64
+	Login     string
+	AvatarURL string
+	HTMLURL   string
+	Type      string
 }
 
 type Label struct {
-	Name  string
-	Color string
-}
-
-type Repository struct {
-	Name     string
-	FullName string
-	HTMLURL  string
-}
-
-type Assignee struct {
-	Login   string
-	HTMLURL string
+	ID          int64
+	Name        string
+	Color       string
+	Description string
 }

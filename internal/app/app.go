@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	httpapp "thingify/internal/app/http"
 	"thingify/internal/config"
+	issueService "thingify/internal/service/issue"
 )
 
 type App struct {
@@ -16,10 +17,13 @@ func New(
 	log *slog.Logger,
 	cfg *config.Config,
 ) *App {
+	issueSvc := issueService.New(log)
+
 	a := cfg.App
 	h := cfg.HTTP
 	srv := httpapp.New(
 		log.WithGroup("http"),
+		issueSvc,
 		a.GithubWebhookSecret,
 		httpapp.WithPort(h.Port),
 		httpapp.WithReadTimeout(h.ReadTimeout),

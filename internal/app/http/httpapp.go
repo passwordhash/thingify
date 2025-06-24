@@ -5,12 +5,13 @@ import (
 	"fmt"
 	"log/slog"
 	"sync"
-	"thingify/internal/http/middleware"
-	"thingify/internal/http/webhook"
 	"time"
 
+	"thingify/internal/http/middleware"
+	"thingify/internal/http/webhook"
+	"thingify/internal/service/issue"
+
 	"github.com/gofiber/fiber/v2"
-	recover "github.com/gofiber/fiber/v2/middleware/recover"
 )
 
 const (
@@ -23,6 +24,8 @@ const (
 // App представляет HTTP приложение, которое управляет сервером и его состоянием.
 type App struct {
 	log *slog.Logger
+
+	issueSvc *issue.Service
 
 	webhookSecret string
 
@@ -67,9 +70,15 @@ func WithRequestTimeout(timeout time.Duration) Option {
 }
 
 // New создает новое HTTP приложение.
-func New(log *slog.Logger, webhookSecret string, opts ...Option) *App {
+func New(
+	log *slog.Logger,
+	issueSvc *issue.Service,
+	webhookSecret string,
+	opts ...Option,
+) *App {
 	app := &App{
 		log:            log,
+		issueSvc:       issueSvc,
 		webhookSecret:  webhookSecret,
 		port:           srvPortDefault,
 		readTimeout:    srvReadTimeoutDefault,
@@ -106,14 +115,20 @@ func (a *App) Run(ctx context.Context) error {
 	}
 
 	fapp := fiber.New(cfg)
-	fapp.Use(recover.New())
+
+	// DISABLED FOR DEV
+	//fapp.Use(recover.New())
 	fapp.Use(middleware.Logging(a.log))
 
-	webhookHandler := webhook.NewHandler(a.webhookSecret)
+	webhookHandler := webhook.NewHandler(a.issueSvc, a.webhookSecret)
 
 	baseRouter := fapp.Group("")
 
 	webhookHandler.RegisterRoutes(baseRouter)
+
+	fapp.Use(func(c *fiber.Ctx) error {
+		return c.Status(404).SendString("404 Not Found")
+	})
 
 	a.mu.Lock()
 	a.fapp = fapp

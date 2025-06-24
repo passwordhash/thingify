@@ -5,9 +5,10 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
+
 	"thingify/internal/app"
 	"thingify/internal/config"
-	"time"
 
 	"context"
 
@@ -31,9 +32,9 @@ func main() {
 	cfg := config.MustLoad()
 
 	logger := config.NewLogger(cfg.App.ENV)
+	slog.SetDefault(logger) // TODO: нужно ли это?
 
-	log.Info("starting Thingify application http_server...")
-	log.Debug("with config", "config", cfg)
+	logger.Info("starting Thingify application http_server...")
 
 	application := app.New(ctx, logger, cfg)
 

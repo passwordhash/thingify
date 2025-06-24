@@ -40,18 +40,18 @@ func Logging(logger *slog.Logger) fiber.Handler {
 
 		switch {
 		case err != nil:
-			fields = append(fields, slog.String("error", err.Error()))
+			fields = append(fields, slog.Any("error", err))
 			logger.LogAttrs(c.Context(), slog.LevelError, "Request failed with handler error", fields...)
 		case status >= 500:
-			fields = append(fields, slog.String("error", err.Error()))
+			fields = append(fields, slog.Any("error", err))
 			logger.LogAttrs(c.Context(), slog.LevelError, "Request failed with server error", fields...)
 		case status >= 400:
-			fields = append(fields, slog.String("error", err.Error()))
+			fields = append(fields, slog.Any("error", err))
 			logger.LogAttrs(c.Context(), slog.LevelWarn, "Request completed with client error", fields...)
 		default:
 			logger.LogAttrs(c.Context(), slog.LevelInfo, "Request completed", fields...)
 		}
 
-		return err
+		return nil
 	}
 }
