@@ -26,7 +26,7 @@ func (p *producer) Publish(ctx context.Context, routingKey string, payload any) 
 	}
 
 	// TODO: FOR DEBUG
-	routingKey = "test"
+	routingKey = "issues"
 
 	// TODO: handle error
 	p.ch.PublishWithContext(ctx,

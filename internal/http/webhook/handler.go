@@ -3,10 +3,12 @@ package webhook
 import (
 	"context"
 	"fmt"
+	"log"
 	"net/http"
 
 	"thingify/internal/domain/model"
 	"thingify/internal/http/response"
+	"thingify/internal/http/webhook/dto"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -45,6 +47,8 @@ func (h *handler) webhook(c *fiber.Ctx) error {
 	switch event {
 	case issueEvent:
 		return h.handleIssueEvent(c)
+	case installationEvent:
+		return h.handleInstallationEvent(c)
 	default:
 		return response.BadRequest(c,
 			fmt.Errorf("unsupported event type: %s", event),
@@ -54,7 +58,7 @@ func (h *handler) webhook(c *fiber.Ctx) error {
 }
 
 func (h *handler) handleIssueEvent(c *fiber.Ctx) error {
-	var issue issueWebhookReq
+	var issue dto.IssueWebhookReq
 	if err := c.BodyParser(&issue); err != nil {
 		return response.BadRequest(c,
 			fmt.Errorf("failed to parse request body: %w", err),
@@ -62,7 +66,7 @@ func (h *handler) handleIssueEvent(c *fiber.Ctx) error {
 		)
 	}
 
-	if issue.Action != "opened" {
+	if issue.Action != dto.ActionOpened {
 		return response.BadRequest(c,
 			fmt.Errorf("unsupported action: %s", issue.Action),
 			"Unsupported action",
@@ -86,4 +90,36 @@ func (h *handler) handleIssueEvent(c *fiber.Ctx) error {
 	return c.Status(http.StatusOK).JSON(fiber.Map{
 		"issue": domain,
 	})
+}
+
+// 1.	Проверить подпись (безопасность) DONE
+// 2.	Распарсить событие DONE
+// 3.	Сохранить данные установки (installation ID + пользователь)
+// 4.	(опционально) Получить installation access token
+// 5.	(опционально) Получить список установленных репозиториев
+// 6.	Привязать установку к своему пользователю (если надо)
+// 7.	Подтвердить полученное событие (200 OK)
+
+func (h *handler) handleInstallationEvent(c *fiber.Ctx) error {
+	var inst dto.InstallationWebhookReq
+	if err := c.BodyParser(&inst); err != nil {
+		return response.BadRequest(c,
+			fmt.Errorf("failed to parse request body: %w", err),
+			"Failed to parse request body",
+		)
+	}
+
+	log.Println("hello")
+
+	// TODO: add delete handling
+	if inst.Action != dto.ActionCreated {
+		return response.BadRequest(c,
+			fmt.Errorf("unsupported action: %s", inst.Action),
+			"Unsupported action",
+		)
+	}
+
+	fmt.Printf("%+v", inst)
+
+	return nil
 }

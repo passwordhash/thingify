@@ -21,4 +21,4 @@ tasks:
         cmds:
             - |
                 smee -u https://smee.io/gbrbW0RXwD4ErqNa \
-                    --target http://localhost:8606/webhook/issue
+                    --target http://localhost:8606/webhook/

@@ -9,5 +9,5 @@ import (
 func (h *handler) RegisterRoutes(g fiber.Router) {
 	webhookGroup := g.Group("/webhook", middleware.ValidateHubSignature(h.secret))
 
-	webhookGroup.Post("/github", h.webhook)
+	webhookGroup.Post("", h.webhook)
 }

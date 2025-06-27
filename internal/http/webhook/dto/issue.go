@@ -1,4 +1,4 @@
-package webhook
+package dto
 
 import (
 	"errors"
@@ -9,7 +9,7 @@ import (
 
 const timeFormat = time.RFC3339
 
-type issueWebhookReq struct {
+type IssueWebhookReq struct {
 	Action     string        `json:"action"`
 	Changes    any           `json:"changes"`
 	Issue      issueDTO      `json:"issue"`
@@ -34,32 +34,7 @@ type issueDTO struct {
 	Labels    []labelDTO `json:"labels"`
 }
 
-type labelDTO struct {
-	ID          int64  `json:"id"`
-	Name        string `json:"name"`
-	Color       string `json:"color"`
-	Description string `json:"description"`
-}
-
-type repositoryDTO struct {
-	ID       int64   `json:"id"`
-	NodeID   string  `json:"node_id"`
-	Name     string  `json:"name"`
-	FullName string  `json:"full_name"`
-	Private  bool    `json:"private"`
-	HTMLURL  string  `json:"html_url"`
-	Owner    userDTO `json:"owner"`
-}
-
-type userDTO struct {
-	ID        int64  `json:"id"`
-	Login     string `json:"login"`
-	AvatarURL string `json:"avatar_url"`
-	HTMLURL   string `json:"html_url"`
-	Type      string `json:"type"`
-}
-
-func (d issueWebhookReq) ToDomain() (model.IssueAction, error) {
+func (d IssueWebhookReq) ToDomain() (model.IssueAction, error) {
 	return model.IssueAction{
 		Issue:      d.Issue.toDomain(),
 		Repository: d.Repository.toDomain(),
@@ -109,35 +84,5 @@ func (d issueDTO) toDomain() model.IssueInfo {
 		User:      d.User.toDomain(),
 		Assignees: assignees,
 		Labels:    labels,
-	}
-}
-
-func (d userDTO) toDomain() model.GHUser {
-	return model.GHUser{
-		ID:        d.ID,
-		Login:     d.Login,
-		AvatarURL: d.AvatarURL,
-		HTMLURL:   d.HTMLURL,
-		Type:      d.Type,
-	}
-}
-
-func (d labelDTO) toDomain() model.Label {
-	return model.Label{
-		ID:          d.ID,
-		Name:        d.Name,
-		Color:       d.Color,
-		Description: d.Description,
-	}
-}
-
-func (d repositoryDTO) toDomain() model.GHRepository {
-	return model.GHRepository{
-		ID:       d.ID,
-		Name:     d.Name,
-		FullName: d.FullName,
-		Private:  d.Private,
-		HTMLURL:  d.HTMLURL,
-		Owner:    d.Owner.toDomain(),
 	}
 }

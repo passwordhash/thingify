@@ -127,7 +127,7 @@ func (a *App) Run(ctx context.Context) error {
 	webhookHandler.RegisterRoutes(baseRouter)
 
 	fapp.Use(func(c *fiber.Ctx) error {
-		return c.Status(404).SendString("404 Not Found")
+		return fiber.ErrBadRequest
 	})
 
 	a.mu.Lock()
