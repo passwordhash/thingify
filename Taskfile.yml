@@ -5,13 +5,13 @@ dotenv: [.env.local]
 tasks:
     dev:
         desc: Start app + infra
-        deps: [up-local]
+        deps: [up]
         cmds:
             - task: run
-    up-local:
+    up:
         desc: Start the application infrastructure locally
         cmds:
-            - docker-compose -f docker-compose.dev.yml up -d --build
+            - docker compose -f docker-compose.dev.yml up -d --build
     run:
         cmds:
             - go run ./cmd/http_server/main.go -config=./configs/local.yml

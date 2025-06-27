@@ -64,6 +64,8 @@ func (c *Client) NewConsumer(queueName string) (*consumer, error) {
 		return nil, fmt.Errorf("%s: failed to declare queue %s: %w", op, queueName, err)
 	}
 
+	//ch.QueueBind(queue.Name, "", )
+
 	return &consumer{
 		ch:        ch,
 		queueName: queue.Name,

@@ -7,21 +7,36 @@ import (
 	"thingify/internal/domain/model"
 )
 
+type issuePublisher interface {
+	Publish(ctx context.Context, routingKey string, payload any) error
+}
+
 type Service struct {
-	log *slog.Logger
+	log       *slog.Logger
+	publisher issuePublisher
 }
 
-func New(log *slog.Logger) *Service {
-	return &Service{log: log}
+func New(log *slog.Logger, publisher issuePublisher) *Service {
+	return &Service{
+		log:       log,
+		publisher: publisher,
+	}
 }
 
-func (s *Service) PublishIssue(_ context.Context, issue model.IssueAction) error {
+func (s *Service) PublishIssue(ctx context.Context, issue model.IssueAction) error {
 	const op = "service.issue.PublishIssue"
 
 	log := s.log.With(
 		slog.String("op", op),
 		slog.Int64("issue_id", issue.Issue.ID),
 	)
+
+	err := s.publisher.Publish(ctx, "TEMPORARY_ROUTING_KEY", issue)
+	if err != nil {
+		log.Error("Failed to publish issue to the message broker", slog.Any("error", err))
+
+		return err
+	}
 
 	log.Info("Publish issue to the message broker successfully")
 

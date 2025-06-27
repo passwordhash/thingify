@@ -2,9 +2,12 @@ package app
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
+
 	httpapp "thingify/internal/app/http"
 	"thingify/internal/config"
+	"thingify/internal/messaging/rabbitmq"
 	issueService "thingify/internal/service/issue"
 )
 
@@ -17,7 +20,19 @@ func New(
 	log *slog.Logger,
 	cfg *config.Config,
 ) *App {
-	issueSvc := issueService.New(log)
+	rabbitmqClient, err := rabbitmq.NewClient(cfg.RabbitMQ.URL())
+	if err != nil {
+		panic(fmt.Errorf("failed to create RabbitMQ client: %w", err))
+	}
+
+	mqProducer, err := rabbitmqClient.NewProducer(cfg.RabbitMQ.IssueExchange)
+	if err != nil {
+		panic(fmt.Errorf("failed to create RabbitMQ producer: %w", err))
+	}
+
+	//mqConsumer, err := rabbitmqClient.NewConsumer(cfg.RabbitMQ.)
+
+	issueSvc := issueService.New(log, mqProducer)
 
 	a := cfg.App
 	h := cfg.HTTP

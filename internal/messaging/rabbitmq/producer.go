@@ -25,11 +25,13 @@ func (p *producer) Publish(ctx context.Context, routingKey string, payload any) 
 		return fmt.Errorf("%s: failed to marshal payload: %w", op, err)
 	}
 
-	const tmp_route_key = "users"
+	// TODO: FOR DEBUG
+	routingKey = "test"
 
+	// TODO: handle error
 	p.ch.PublishWithContext(ctx,
 		p.issueExchange,
-		tmp_route_key,
+		routingKey,
 		false, false,
 		mq.Publishing{
 			ContentType: "application/json",

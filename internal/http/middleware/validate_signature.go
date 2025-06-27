@@ -4,6 +4,7 @@ import (
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/hex"
+	"fmt"
 	"log/slog"
 	"os"
 	"strconv"
@@ -21,6 +22,7 @@ var debug bool
 func init() {
 	if f, _ := strconv.ParseBool(os.Getenv("DEBUG")); f {
 		slog.Info("DEBUG MODE ENABLED: Signature validation will be skipped")
+		debug = true
 	}
 }
 
@@ -28,7 +30,10 @@ func ValidateHubSignature(secret string) func(c *fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
 		sigHeader := c.Get(signatureHeader, "")
 		if sigHeader == "" {
-			return response.BadRequest(c, nil, "Missing signature header")
+			return response.BadRequest(c,
+				fmt.Errorf("missing %s header", signatureHeader),
+				"Missing signature header",
+			)
 		}
 
 		body := c.Body()
@@ -36,7 +41,10 @@ func ValidateHubSignature(secret string) func(c *fiber.Ctx) error {
 		mac.Write(body)
 		expected := "sha256=" + hex.EncodeToString(mac.Sum(nil))
 		if !debug && !hmac.Equal([]byte(expected), []byte(sigHeader)) {
-			return response.Unauthorized(c, nil, "Invalid github signature")
+			return response.Unauthorized(c,
+				fmt.Errorf("signature mismatch: expected %s, got %s", expected, sigHeader),
+				"Invalid github signature",
+			)
 		}
 
 		return c.Next()
