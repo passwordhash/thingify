@@ -16,7 +16,8 @@ const (
 )
 
 const (
-	issueEvent = "issues"
+	issueEvent        = "issues"
+	installationEvent = "installation"
 )
 
 type issuePublisher interface {
@@ -38,17 +39,21 @@ func NewHandler(
 	}
 }
 
-func (h *handler) retrieveIssue(c *fiber.Ctx) error {
+func (h *handler) webhook(c *fiber.Ctx) error {
 	event := c.Get(eventHeader)
 
-	fmt.Println("event: ", event)
-	if event != issueEvent {
+	switch event {
+	case issueEvent:
+		return h.handleIssueEvent(c)
+	default:
 		return response.BadRequest(c,
 			fmt.Errorf("unsupported event type: %s", event),
 			"Unsupported event type",
 		)
 	}
+}
 
+func (h *handler) handleIssueEvent(c *fiber.Ctx) error {
 	var issue issueWebhookReq
 	if err := c.BodyParser(&issue); err != nil {
 		return response.BadRequest(c,
@@ -57,7 +62,6 @@ func (h *handler) retrieveIssue(c *fiber.Ctx) error {
 		)
 	}
 
-	// TODO: может быть вынести в middleware
 	if issue.Action != "opened" {
 		return response.BadRequest(c,
 			fmt.Errorf("unsupported action: %s", issue.Action),
