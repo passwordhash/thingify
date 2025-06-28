@@ -21,7 +21,7 @@ func (c *consumer) Consume(ctx context.Context) (<-chan []byte, <-chan error) {
 	const op = "rabbitmq.Consume"
 
 	data := make(chan []byte)
-	errCh := make(chan error, 1)
+	errCh := make(chan error, 100)
 	go func() {
 		defer close(data)
 		defer close(errCh)

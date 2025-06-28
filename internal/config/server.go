@@ -41,7 +41,7 @@ type RabbitMQConfig struct {
 	User               string `yaml:"user" env:"RABBITMQ_USER" env-required:"true"`
 	Pass               string `yaml:"pass" env:"RABBITMQ_PASS" env-required:"true"`
 	IssueExchange      string `yaml:"issue_exchange" env:"RABBITMQ_ISSUE_EXCHANGE" env-default:"issue_exchange"`
-	CheckRequestsQueue string `yaml:"check_requests_queue" env:"RABBITMQ_CHECK_REQUESTS_QUEUE" env-default:"manual_check_requests"`
+	CheckRequestsQueue string `yaml:"check_requests_queue" env:"RABBITMQ_CHECK_REQUESTS_QUEUE" env-default:"manual_check_requests"` // TODO: remove
 }
 
 func (c *RabbitMQConfig) URL() string {

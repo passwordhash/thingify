@@ -13,8 +13,8 @@ const (
 )
 
 type producer struct {
-	ch            *mq.Channel
-	issueExchange string
+	ch       *mq.Channel
+	exchange string
 }
 
 func (p *producer) Publish(ctx context.Context, routingKey string, payload any) error {
@@ -25,12 +25,9 @@ func (p *producer) Publish(ctx context.Context, routingKey string, payload any) 
 		return fmt.Errorf("%s: failed to marshal payload: %w", op, err)
 	}
 
-	// TODO: FOR DEBUG
-	routingKey = "issues"
-
 	// TODO: handle error
 	p.ch.PublishWithContext(ctx,
-		p.issueExchange,
+		p.exchange,
 		routingKey,
 		false, false,
 		mq.Publishing{

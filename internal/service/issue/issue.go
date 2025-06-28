@@ -31,7 +31,9 @@ func (s *Service) PublishIssue(ctx context.Context, issue model.IssueAction) err
 		slog.Int64("issue_id", issue.Issue.ID),
 	)
 
-	err := s.publisher.Publish(ctx, "TEMPORARY_ROUTING_KEY", issue)
+	// TODO: сделать routingKey - installation id
+	installID := "73271876"
+	err := s.publisher.Publish(ctx, installID, issue)
 	if err != nil {
 		log.Error("Failed to publish issue to the message broker", slog.Any("error", err))
 
