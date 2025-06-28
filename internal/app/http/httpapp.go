@@ -120,7 +120,11 @@ func (a *App) Run(ctx context.Context) error {
 	//fapp.Use(recover.New())
 	fapp.Use(middleware.Logging(a.log))
 
-	webhookHandler := webhook.NewHandler(a.issueSvc, a.webhookSecret)
+	webhookHandler := webhook.NewHandler(
+		a.issueSvc,
+		a.issueSvc,
+		a.webhookSecret,
+	)
 
 	baseRouter := fapp.Group("")
 

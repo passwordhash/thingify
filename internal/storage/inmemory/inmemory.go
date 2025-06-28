@@ -3,37 +3,39 @@ package inmemory
 import (
 	"context"
 	"sync"
-	"thingify/internal/domain/model"
+	repoerr "thingify/internal/storage/errors"
 )
 
 type Storage struct {
-	mu     sync.RWMutex
-	issues map[string][]model.Issue
+	mu sync.RWMutex
+
+	// "userID": "installationID"
+	users map[string]string
 }
 
 func New() *Storage {
 	return &Storage{
-		issues: make(map[string][]model.Issue),
+		users: make(map[string]string),
 	}
 }
 
-func (s *Storage) Save(ctx context.Context, login string, issue model.Issue) error {
+func (s *Storage) SaveUserID(_ context.Context, installationID, userID string) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	s.issues[login] = append(s.issues[login], issue)
+	s.users[userID] = installationID
 
 	return nil
 }
 
-func (s *Storage) Issues(ctx context.Context, login string) ([]model.Issue, error) {
+func (s *Storage) GetInstallationIDByUserID(_ context.Context, userID string) (string, error) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
-	userIssues, exists := s.issues[login]
-	if !exists {
-		return nil, nil // or return an error if preferred
+	id, ok := s.users[userID]
+	if !ok {
+		return "", repoerr.ErrInstallationIDNotFound
 	}
 
-	return userIssues, nil
+	return id, nil
 }

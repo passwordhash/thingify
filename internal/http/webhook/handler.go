@@ -3,8 +3,8 @@ package webhook
 import (
 	"context"
 	"fmt"
-	"log"
 	"net/http"
+	"strconv"
 
 	"thingify/internal/domain/model"
 	"thingify/internal/http/response"
@@ -26,17 +26,25 @@ type issuePublisher interface {
 	PublishIssue(ctx context.Context, issue model.IssueAction) error
 }
 
+type userInstaller interface {
+	InstallNewUser(ctx context.Context, userID, installationID string) error
+}
+
 type handler struct {
 	issuePublisher issuePublisher
-	secret         string
+	userInstaller  userInstaller
+
+	secret string
 }
 
 func NewHandler(
 	publisher issuePublisher,
+	userInstaller userInstaller,
 	secret string,
 ) *handler {
 	return &handler{
 		issuePublisher: publisher,
+		userInstaller:  userInstaller,
 		secret:         secret,
 	}
 }
@@ -92,14 +100,6 @@ func (h *handler) handleIssueEvent(c *fiber.Ctx) error {
 	})
 }
 
-// 1.	Проверить подпись (безопасность) DONE
-// 2.	Распарсить событие DONE
-// 3.	Сохранить данные установки (installation ID + пользователь)
-// 4.	(опционально) Получить installation access token
-// 5.	(опционально) Получить список установленных репозиториев
-// 6.	Привязать установку к своему пользователю (если надо)
-// 7.	Подтвердить полученное событие (200 OK)
-
 func (h *handler) handleInstallationEvent(c *fiber.Ctx) error {
 	var inst dto.InstallationWebhookReq
 	if err := c.BodyParser(&inst); err != nil {
@@ -109,8 +109,6 @@ func (h *handler) handleInstallationEvent(c *fiber.Ctx) error {
 		)
 	}
 
-	log.Println("hello")
-
 	// TODO: add delete handling
 	if inst.Action != dto.ActionCreated {
 		return response.BadRequest(c,
@@ -119,7 +117,15 @@ func (h *handler) handleInstallationEvent(c *fiber.Ctx) error {
 		)
 	}
 
-	fmt.Printf("%+v", inst)
+	userID := strconv.FormatInt(inst.Installation.Account.ID, 10)
+	instID := strconv.FormatInt(inst.Installation.ID, 10)
+	err := h.userInstaller.InstallNewUser(c.UserContext(), userID, instID)
+	if err != nil {
+		return response.Internal(c,
+			fmt.Errorf("failed to install new user: %w", err),
+			"Failed to install new user",
+		)
+	}
 
 	return nil
 }

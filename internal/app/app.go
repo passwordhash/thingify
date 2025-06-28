@@ -9,6 +9,7 @@ import (
 	"thingify/internal/config"
 	"thingify/internal/messaging/rabbitmq"
 	issueService "thingify/internal/service/issue"
+	"thingify/internal/storage/inmemory"
 )
 
 type App struct {
@@ -20,6 +21,8 @@ func New(
 	log *slog.Logger,
 	cfg *config.Config,
 ) *App {
+	inmem := inmemory.New()
+
 	rabbitmqClient, err := rabbitmq.NewClient(cfg.RabbitMQ.URL())
 	if err != nil {
 		panic(fmt.Errorf("failed to create RabbitMQ client: %w", err))
@@ -30,9 +33,12 @@ func New(
 		panic(fmt.Errorf("failed to create RabbitMQ producer: %w", err))
 	}
 
-	//mqConsumer, err := rabbitmqClient.NewConsumer(cfg.RabbitMQ.)
-
-	issueSvc := issueService.New(log, mqProducer)
+	issueSvc := issueService.New(
+		log.WithGroup("service"),
+		mqProducer,
+		inmem,
+		inmem,
+	)
 
 	a := cfg.App
 	h := cfg.HTTP

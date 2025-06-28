@@ -59,6 +59,7 @@ func main() {
 	go func() {
 		for data := range dataCh {
 			_, err = out.Write(data)
+			slog.Info("Received data from RabbitMQ")
 			if err != nil {
 				fmt.Printf("Error marshaling data: %v\n", err)
 				continue
